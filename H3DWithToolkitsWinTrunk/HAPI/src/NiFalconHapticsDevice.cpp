@@ -29,7 +29,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-
+#define NIFALCONAPI_LIBUSB
 #include <HAPI/NiFalconHapticsDevice.h>
 
 #ifdef HAVE_NIFALCONAPI
@@ -56,9 +56,277 @@
 
 #include <H3DUtil/DynamicLibrary.h>
 
+//------------------------------------------------------------------------------
+// From CWoodenDevice.h
+//------------------------------------------------------------------------------
+// Following includes are only used for reading/writing config file and to find
+// the user's home directory (where the config file will be stored)
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+#define LAN
+//------------------------------------------------------------------------------
+
+//#include <boost/array.hpp>
+//#include <boost/asio.hpp>
+
+//using boost::asio::ip::udp;
+
+
 
 using namespace HAPI;
 using namespace libnifalcon;
+using namespace std;
+
+
+
+
+
+
+
+
+
+
+//------------------------------------------------------------------------------
+// From CWoodenDevice.h
+//------------------------------------------------------------------------------
+std::string toJSON(const woodenhaptics_message& m) {
+    std::stringstream ss;
+    ss << "{" << std::endl <<
+          "  'position_x':       " << m.position_x << "," << std::endl <<
+          "  'position_y':       " << m.position_y << "," << std::endl <<
+          "  'position_z':       " << m.position_z << "," << std::endl <<
+          "  'command_force_x':  " << m.command_force_x << "," << std::endl <<
+          "  'command_force_y':  " << m.command_force_y << "," << std::endl <<
+          "  'command_force_z':  " << m.command_force_z << "," << std::endl <<
+          "  'actual_current_0': " << m.actual_current_0 << "," << std::endl <<
+          "  'actual_current_1': " << m.actual_current_1 << "," << std::endl <<
+          "  'actual_current_2': " << m.actual_current_2 << "," << std::endl <<
+          "  'temperture_0':     " << m.temperature_0 << "," << std::endl <<
+          "  'temperture_1':     " << m.temperature_1 << "," << std::endl <<
+          "  'temperture_2':     " << m.temperature_2 << "," << std::endl <<
+          "}" << std::endl;
+
+    return ss.str();
+}
+NiFalconHapticsDevice::configuration default_woody(){
+    double data[] = { 0, 0.010, 0.010, 0.010,
+                      0.080, 0.205, 0.245,
+                      0.160, 0.120, 0.120,
+                      0.220, 0.000, 0.080, 0.100,
+                      0.0259, 0.0259, 0.0259, 3.0, 2000, 2000, 2000,
+                      5.0, 1000.0, 8.0,
+                      0.170, 0.110, 0.051, 0.091, 0};
+    return NiFalconHapticsDevice::configuration(data);
+}
+
+double v(const std::string& json, const std::string& key){
+    int p = json.find(":", json.find(key));
+    return atof(json.substr(p+1).c_str());
+}
+
+NiFalconHapticsDevice::configuration fromJSON(std::string json){
+    double d[]= {
+        v(json,"variant"),
+        v(json,"diameter_capstan_a"),
+        v(json,"diameter_capstan_b"),
+        v(json,"diameter_capstan_c"),
+        v(json,"length_body_a"),
+        v(json,"length_body_b"),
+        v(json,"length_body_c"),
+        v(json,"diameter_body_a"),
+        v(json,"diameter_body_b"),
+        v(json,"diameter_body_c"),
+        v(json,"workspace_origin_x"),
+        v(json,"workspace_origin_y"),
+        v(json,"workspace_origin_z"),
+        v(json,"workspace_radius"),
+        v(json,"torque_constant_motor_a"),
+        v(json,"torque_constant_motor_b"),
+        v(json,"torque_constant_motor_c"),
+        v(json,"current_for_10_v_signal"),
+        v(json,"cpr_encoder_a"),
+        v(json,"cpr_encoder_b"),
+        v(json,"cpr_encoder_c"),
+        v(json,"max_linear_force"),
+        v(json,"max_linear_stiffness"),
+        v(json,"max_linear_damping"),
+        v(json,"mass_body_b"),
+        v(json,"mass_body_c"),
+        v(json,"length_cm_body_b"),
+        v(json,"length_cm_body_c"),
+        v(json,"g_constant")
+    };
+    return NiFalconHapticsDevice::configuration(d);
+}
+
+std::string j(const std::string& key, const double& value){
+    std::stringstream s;
+    s << "    \"" << key << "\":";
+    while(s.str().length()<32) s<< " ";
+    s << value << "," << std::endl;
+    return s.str();
+}
+std::string toJSON(const NiFalconHapticsDevice::configuration& c){
+    using namespace std;
+    stringstream json;
+    json << "{" << endl
+         << j("variant",c.variant)
+         << j("diameter_capstan_a",c.diameter_capstan_a)
+         << j("diameter_capstan_b",c.diameter_capstan_b)
+         << j("diameter_capstan_c",c.diameter_capstan_c)
+         << j("length_body_a",c.length_body_a)
+         << j("length_body_b",c.length_body_b)
+         << j("length_body_c",c.length_body_c)
+         << j("diameter_body_a",c.diameter_body_a)
+         << j("diameter_body_b",c.diameter_body_b)
+         << j("diameter_body_c",c.diameter_body_c)
+         << j("workspace_origin_x",c.workspace_origin_x)
+         << j("workspace_origin_y",c.workspace_origin_y)
+         << j("workspace_origin_z",c.workspace_origin_z)
+         << j("workspace_radius",c.workspace_radius)
+         << j("torque_constant_motor_a",c.torque_constant_motor_a)
+         << j("torque_constant_motor_b",c.torque_constant_motor_b)
+         << j("torque_constant_motor_c",c.torque_constant_motor_c)
+         << j("current_for_10_v_signal",c.current_for_10_v_signal)
+         << j("cpr_encoder_a",c.cpr_encoder_a)
+         << j("cpr_encoder_b",c.cpr_encoder_b)
+         << j("cpr_encoder_c",c.cpr_encoder_c)
+         << j("max_linear_force",c.max_linear_force)
+         << j("max_linear_stiffness",c.max_linear_stiffness)
+         << j("max_linear_damping",c.max_linear_damping)
+         << j("mass_body_b",c.mass_body_b)
+         << j("mass_body_c",c.mass_body_c)
+         << j("length_cm_body_b",c.length_cm_body_b)
+         << j("length_cm_body_c",c.length_cm_body_c)
+         << j("g_constant",c.g_constant)
+         << "}" << endl;
+    return json.str();
+}
+
+void write_config_file(const NiFalconHapticsDevice::configuration& config){
+    const char *homedir;
+    if ((homedir = getenv("HOME")) == NULL) {
+        homedir = getpwuid(getuid())->pw_dir;
+    }
+
+    std::cout << "Writing configuration to: "<< homedir
+              << "/woodenhaptics.json" << std::endl;
+    std::ofstream ofile;
+    ofile.open(std::string(homedir) + "/woodenhaptics.json");
+    ofile << toJSON(config);
+    ofile.close();
+}
+
+NiFalconHapticsDevice::configuration read_config_file(){
+    const char *homedir;
+    if ((homedir = getenv("HOME")) == NULL) {
+        homedir = getpwuid(getuid())->pw_dir;
+    }
+
+    std::cout << "Trying loading configuration from: "<< homedir
+              << "/woodenhaptics.json" << std::endl;
+
+    std::ifstream ifile;
+    ifile.open(std::string(homedir) + "/woodenhaptics.json");
+    if(ifile.is_open()){
+        std::stringstream buffer;
+        buffer << ifile.rdbuf();
+        ifile.close();
+        std::cout << "Success. " << std::endl;
+        return fromJSON(buffer.str());
+    } else {
+        std::cout << "File not found. We will write one "
+                  << "based on default configuration values." << std::endl;
+
+        write_config_file(default_woody());
+        return default_woody();
+    }
+}
+
+
+
+
+const double pi = 3.14159265359;
+
+//==============================================================================
+// Helper functions for getPosition & setForce
+//==============================================================================
+
+struct pose {
+    double Ln;
+    double Lb;
+    double Lc;
+    double tA;  // angle of body A (theta_A)
+    double tB;  // angle of body B (theta_B)
+    double tC;  // angle of body C (theta_C)
+};
+
+pose calculate_pose(const NiFalconHapticsDevice::configuration& c, double* encoder_values) {
+    pose p;
+
+    double cpr[] = { c.cpr_encoder_a, c.cpr_encoder_b, c.cpr_encoder_c };
+    double gearRatio[] = { c.diameter_body_a / c.diameter_capstan_a,
+                           -c.diameter_body_b / c.diameter_capstan_b,
+                           c.diameter_body_c / c.diameter_capstan_c };
+
+    double dofAngle[3];
+#if defined(USB) || defined(LAN)
+    for(int i=0;i<3;i++)
+        dofAngle[i] = (2.0*pi*encoder_values[i]/cpr[i]) / gearRatio[i];
+#else
+    for(int i=0;i<3;i++)
+        dofAngle[i] = getMotorAngle(i,cpr[i]) / gearRatio[i];
+    dofAngle[0] = -dofAngle[0]; // 2016-04-25 sign switch
+#endif
+
+    if(int(c.variant) == 1){ // ALUHAPTICS
+        dofAngle[0] = -dofAngle[0];
+        dofAngle[1] = dofAngle[1];
+        dofAngle[2] = dofAngle[2];
+    }
+
+    // Calculate dof angles (theta) for each body
+    p.Ln = c.length_body_a;
+    p.Lb = c.length_body_b;
+    p.Lc = c.length_body_c;
+    p.tA = dofAngle[0];
+    p.tB = dofAngle[1];
+    p.tC = dofAngle[2]; // 2016-05-30
+
+    return p;
+}
+
+double deg(double rad){
+    return 360*rad/(2*3.141592);
+}
+
+//------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 //#define DEBUG_PRINTOUTS
@@ -79,7 +347,7 @@ NiFalconHapticsDevice::NiFalconHapticsDevice( unsigned int device_index ):
   com_thread( NULL ),
   com_func_cb_handle( -1 ),
   index( device_index ),
-  device( new libnifalcon::FalconDevice ) {
+  device( new libnifalcon::FalconDevice ), totalTime(0) {
   
   max_stiffness = 800;
 }
@@ -89,9 +357,28 @@ NiFalconHapticsDevice::~NiFalconHapticsDevice() {
 }
 
 bool NiFalconHapticsDevice::initHapticsDevice( int _thread_frequency ) {
+
+    m_config = read_config_file();
+
+    int port = 47111;
+    std::cout << "Open port " << port << " for Remote Haptics" << std::endl;
+    rh.init(port);
+
+
+
+
+
+
+
+
+
+
+
+
+
   
 #ifdef NIFALCONAPI_LIBUSB
-  device->setFalconComm<libnifalcon::FalconCommLibUSB>();
+  //device->setFalconComm<libnifalcon::FalconCommLibUSB>();
 #else
 #ifdef NIFALCONAPI_LIBFTD2XX
   device->setFalconComm<libnifalcon::FalconCommFTD2XX>();
@@ -102,9 +389,9 @@ bool NiFalconHapticsDevice::initHapticsDevice( int _thread_frequency ) {
 #endif
 #endif
   
-  device->setFalconFirmware<libnifalcon::FalconFirmwareNovintSDK>();
-  device->setFalconKinematic<libnifalcon::FalconKinematicStamper>();
-  device->setFalconGrip<libnifalcon::FalconGripFourButton>();
+  //device->setFalconFirmware<libnifalcon::FalconFirmwareNovintSDK>();
+  //device->setFalconKinematic<libnifalcon::FalconKinematicStamper>();
+  //device->setFalconGrip<libnifalcon::FalconGripFourButton>();
  
 #ifdef DEBUG_PRINTOUTS
   // get number of connected falcons.
@@ -122,6 +409,8 @@ bool NiFalconHapticsDevice::initHapticsDevice( int _thread_frequency ) {
   std::cout << "Opening falcon " << index << std::endl;
 
 #endif
+
+  /*
 
   if(!device->open( index )) {
     stringstream s;
@@ -161,6 +450,7 @@ bool NiFalconHapticsDevice::initHapticsDevice( int _thread_frequency ) {
       return false;
     }
   }
+  */
 
   // set up a communication thread for the device.
   com_thread = 
@@ -191,7 +481,50 @@ void NiFalconHapticsDevice::updateDeviceValues( DeviceValues &dv,
                                                 HAPITime dt ) {
   HAPIHapticsDevice::updateDeviceValues( dv, dt );
   com_lock.lock();
-  dv.position = current_values.position;
+  totalTime+=dt;
+
+
+  Libremotehaptics::Vector3d lp;
+  rh.getPosition(lp);
+  double encoder_values[] = { -lp.x,
+                               lp.y,
+                               lp.z };
+  pose p  = calculate_pose(m_config, encoder_values);
+
+
+
+  const double& Ln = p.Ln;
+  const double& Lb = p.Lb;
+  const double& Lc = p.Lc;
+  const double& tA = p.tA;
+  double tB = p.tB;
+  double tC = p.tC;
+
+  // Mike edition
+  if(int(m_config.variant) == 1) // ALUHAPTICS
+      tB = tB + 3.141592/2;
+  else
+      tC = -tC + 3.141592/2;
+
+  double x,y,z;
+  x = cos(tA)*(Lb*sin(tB)+Lc*sin(tC))    - m_config.workspace_origin_x;
+  y = sin(tA)*(Lb*sin(tB)+Lc*sin(tC)) - m_config.workspace_origin_y;
+  z = Ln+Lb*cos(tB)-Lc*cos(tC) - m_config.workspace_origin_z;
+
+
+  dv.position = Vec3(y,z,x); // Chai->H3D transform
+  //dv.position = Vec3(0.1*sin(totalTime),p.y,0.05+p.z);//current_values.position;
+
+  std::cout << "Got from remotehaptics: " << lp.x << "," << lp.y << "," << lp.z << "\n";
+  std::cout << "Calculated position (chai): " << x << "," << y << "," << z << "\n";
+
+
+
+
+
+
+
+
   calculateVelocity(dv, dt);
   dv.orientation = current_values.orientation;
   dv.button_status = current_values.button_status;
@@ -202,6 +535,105 @@ void NiFalconHapticsDevice::sendOutput( DeviceOutput &dv,
                                         HAPITime dt ) {
   com_lock.lock();
   current_values.force = dv.force;
+  //std::cout << "Force " << dv.force.x << " "<< dv.force.y << " "<< dv.force.z << " " << "\n";
+
+  Libremotehaptics::Vector3d lp;
+  rh.getPosition(lp);
+  double encoder_values[] = { -lp.x,
+                               lp.y,
+                               lp.z };
+  pose p  = calculate_pose(m_config, encoder_values);
+  const double& Ln = p.Ln;
+  const double& Lb = p.Lb;
+  const double& Lc = p.Lc;
+  const double& tA = p.tA;
+  double tB = p.tB;
+  double tC = p.tC;
+
+  // Mike edition
+  if(int(m_config.variant) == 1) // ALUHAPTICS
+      tB = tB + 3.141592/2;
+  else
+      tC = -tC + 3.141592/2;
+  Matrix3 J(  -sin(tA)*(Lb*sin(tB)+Lc*sin(tC)),    Lb*cos(tA)*cos(tB),   Lc*cos(tA)*cos(tC),
+          cos(tA)*(Lb*sin(tB)+Lc*sin(tC)),    Lb*sin(tA)*cos(tB),   Lc*sin(tA)*cos(tC),
+          0,                           -Lb*sin(tB),           Lc*sin(tC)     );
+  Matrix3 H3DtoChai(0,0,1,
+                    1,0,0,
+                    0,1,0);
+  Vec3 f = H3DtoChai * dv.force;
+  Vec3 t = J.transpose() * f;
+
+  // Gravity compensation
+  const double& g=m_config.g_constant;
+  const double& Lb_cm = m_config.length_cm_body_b;
+  const double& Lc_cm = m_config.length_cm_body_c;
+  const double& mB = m_config.mass_body_b;
+  const double& mC = m_config.mass_body_c;
+
+  t = t + -g*Vec3( 0,
+                   mB*Lb_cm*sin(tB) + mC*(Lb_cm + Lc_cm)*sin(tC),
+                   mC*Lc_cm*sin(tC) );
+  // Gear down
+  double motorTorque[] = {
+      t.x * m_config.diameter_capstan_a / m_config.diameter_body_a,
+      -t.y * m_config.diameter_capstan_b / m_config.diameter_body_b,
+      -t.z * m_config.diameter_capstan_c / m_config.diameter_body_c }; // switched sign 2016-05-30
+
+
+  if(int(m_config.variant) == 1){ // ALUHAPTICS
+      motorTorque[0] = motorTorque[0];
+      motorTorque[1] = motorTorque[1];
+      motorTorque[2] = -motorTorque[2];
+  }
+  // Set motor torque (t)
+  double torque_constant[] = { m_config.torque_constant_motor_a,
+                               m_config.torque_constant_motor_b,
+                               m_config.torque_constant_motor_c };
+
+  short signalToSend[3] = {0,0,0};
+  int dir[3];
+  int dir_chan[3] = {16,32,64}; // DIO4, DIO5, DIO6
+  int dir_sum=0;
+
+  for(int i=0;i<3;++i){
+      double motorAmpere = motorTorque[i] / torque_constant[i];
+      double signal = motorAmpere * 10.0 / m_config.current_for_10_v_signal;
+      if(signal>10.0)  signal =  10.0;
+      if(signal<-10.0) signal = -10.0;
+
+//      dir[i] = cSign(signal) > 0 ? 1 : 2;
+//      dir_sum += cSign(signal) < 0 ? dir_chan[i] : 0;
+#if defined(USB) || defined(LAN)
+      if(motorAmpere>3) motorAmpere = 3;
+      if(motorAmpere<-3) motorAmpere = -3;
+      signalToSend[i] = short(motorAmpere*1000);
+#endif
+
+#ifndef USB
+#ifndef LAN
+      // One at a time
+      uint direction = cSign(v) > 0 ? 1 : 2;
+
+      uint data[2];
+      data[0] = dir_chan[i];
+      data[1] = 0;
+      S826_DioOutputWrite(0,data,direction);
+
+      setVolt(signal,i);
+#endif
+#endif
+  }
+
+  Libremotehaptics::Vector3d lf;
+  lf.x = signalToSend[0];
+  lf.y = signalToSend[1];
+  lf.z = signalToSend[2];
+  rh.setForce(lf);
+
+
+
+
   current_values.torque = dv.torque;
   com_lock.unlock();
 }
@@ -214,16 +646,18 @@ NiFalconHapticsDevice::com_func( void *data ) {
   if( hd->getDeviceState() != HAPIHapticsDevice::ENABLED ) {
     return H3DUtil::PeriodicThread::CALLBACK_CONTINUE; }
   
-  hd->device->getFalconFirmware()->setHomingMode( true );
-  hd->device->runIOLoop();
-  if( hd->device->getFalconFirmware()->isHomed() ) {
+  //hd->device->getFalconFirmware()->setHomingMode( true );
+  //hd->device->runIOLoop();
+  //if( hd->device->getFalconFirmware()->isHomed() ) {
+  if(true){
 
+    /*
     // get position
-    boost::array<double,3> pos = hd->device->getPosition();
+    std::array<double,3> pos = hd->device->getPosition();
     Vec3 position( pos[0] , pos[1] , (pos[2] - .150f) );
     
     // get buttons
-    boost::shared_ptr<FalconGrip> grip = hd->device->getFalconGrip();
+    std::shared_ptr<FalconGrip> grip = hd->device->getFalconGrip();
     // It is safe to not check the number of digital outputs since
     // getDigitalInput in FalconGrip.h checks this for us.
     // Button input are grabbed this way in order to get them in the
@@ -243,7 +677,7 @@ NiFalconHapticsDevice::com_func( void *data ) {
     hd->current_values.button_status = button_status;
     hd->current_values.orientation = orientation;
 
-    boost::array<double,3> f;
+    std::array<double,3> f;
     f[0] = hd->current_values.force.x;
     f[1] = hd->current_values.force.y;
     f[2] = hd->current_values.force.z;
@@ -252,6 +686,7 @@ NiFalconHapticsDevice::com_func( void *data ) {
 
     // send force
     hd->device->setForce(f);
+    */
  }
   
   return H3DUtil::PeriodicThread::CALLBACK_CONTINUE;
@@ -267,6 +702,7 @@ bool NiFalconHapticsDevice::setDeviceIndex( unsigned int i ) {
 }
 
 unsigned int NiFalconHapticsDevice::getNrConnectedFalconDevices() {
+    /*
   libnifalcon::FalconDevice device;
 #ifdef NIFALCONAPI_LIBUSB
   device.setFalconComm<libnifalcon::FalconCommLibUSB>();
@@ -284,6 +720,8 @@ unsigned int NiFalconHapticsDevice::getNrConnectedFalconDevices() {
     return 0;
   }
   return num_falcons;
+  */
+    return 1;
 }
 
 #endif
