@@ -10,6 +10,7 @@ https://github.com/forsslund/h3d-testing.git rev c1546ec8d9a94b3be7d74f8ba9f1a12
 
 Then we forcefully shoehorn in some preliminary woodenhaptics code, under the diguise as "NiFalconDevice".
 
+<pre>
 To install do following (Ubuntu 16.04 64 bit)
 1. Install dependencies: 
      sh ubuntudep-16.04.sh
@@ -23,7 +24,8 @@ To install do following (Ubuntu 16.04 64 bit)
      cmake ..
      make -j5
      sudo make install
-4. Build H3D (with our hacks) 
+4. Build H3D (with our hacks). 
+   Note: to build debug mode run cmake with flag: -DCMAKE_BUILD_TYPE=Debug
      cd H3DWithToolkitsWinTrunk/build
      cmake .
      make -j5
@@ -32,4 +34,4 @@ To install do following (Ubuntu 16.04 64 bit)
 5. Now you should be able to run some tests:
      cd examples
      H3DLoad SuperShape.x3d
-
+</p>

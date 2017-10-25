@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.6.0)
 PROJECT( H3DWithToolkitsWin )
 
+add_definitions(-std=c++11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
 # set the install directory to the H3DWithToolkitsWin directory on Windows
 IF( WIN32 AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT H3D_CMAKE_INSTALL_PREFIX_ALREADY_SET )
   SET( CMAKE_INSTALL_PREFIX ${H3DWithToolkitsWin_SOURCE_DIR}/.. CACHE PATH "Install path prefix, prepended onto install directories." FORCE )

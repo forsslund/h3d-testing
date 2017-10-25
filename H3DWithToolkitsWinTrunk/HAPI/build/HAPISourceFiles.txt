@@ -51,7 +51,9 @@ set( HAPI_HEADERS "${HAPI_SOURCE_DIR}/../include/HAPI/AnyHapticsDevice.h"
                   "${HAPI_SOURCE_DIR}/../include/HAPI/PlaybackHapticsDevice.h"
                   "${HAPI_SOURCE_DIR}/../include/HAPI/QuanserHapticsDevice.h"
                   "${HAPI_SOURCE_DIR}/../include/HAPI/RuspiniRenderer.h"
-                  "${HAPI_SOURCE_DIR}/../include/HAPI/SimballHapticsDevice.h" )
+                  "${HAPI_SOURCE_DIR}/../include/HAPI/SimballHapticsDevice.h"
+                  "${HAPI_SOURCE_DIR}/../include/HAPI/fshapticdevicethread.h"
+                  "${HAPI_SOURCE_DIR}/../include/HAPI/kinematics.h")
 
 if( EXISTS ${CMAKE_CURRENT_BINARY_DIR}/H3DAPI/HAPI )
   set( HAPI_HEADERS ${HAPI_HEADERS} "${CMAKE_CURRENT_BINARY_DIR}/H3DAPI/HAPI/include/HAPI/HAPI.h" )
@@ -106,7 +108,9 @@ set( HAPI_SOURCE_FILES "AnyHapticsDevice.cpp"
                "PlaybackHapticsDevice.cpp"
                "QuanserHapticsDevice.cpp"
                "RuspiniRenderer.cpp"
-               "SimballHapticsDevice.cpp" )
+               "SimballHapticsDevice.cpp"
+               "fshapticdevicethread.cpp"
+               "kinematics.cpp")
 
 if( OpenHaptics_FOUND )
   set( OH_HEADERS "${HAPI_SOURCE_DIR}/../OpenHapticsRenderer/include/HAPI/Config.h"
