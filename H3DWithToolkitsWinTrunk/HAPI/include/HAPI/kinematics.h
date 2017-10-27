@@ -17,6 +17,48 @@ struct fsVec3d {
 inline fsVec3d operator*(const double& d, const fsVec3d& v){ return fsVec3d(v.m_x*d,v.m_y*d,v.m_z*d); }
 inline fsVec3d operator+(const fsVec3d& a, const fsVec3d& b){ return fsVec3d(a.m_x+b.m_x, a.m_y+b.m_y, a.m_z+b.m_z); }
 
+struct fsRot {
+    //enum {GARBAGE, IDENTITY, ROT_X, ROT_Y, ROT_Z};
+    double m[3][3];
+    //double operator[](int i){return (double[])(r)[i];}
+    fsRot(){}
+    inline void set(double m[3][3]){
+        for(int i=0;i<3;++i)
+            for(int j=0;j<3;++j)
+                this->m[i][j] = m[i][j];
+    }
+    void identity();
+    void rot_x(double t);
+    void rot_y(double t);
+    void rot_z(double t);
+
+
+    /*
+    static fsRot make(enum t=IDENTITY, double rad=0){
+        if(t == IDENTITY){
+            fsRot r;
+            r.m = { {1, 0, 0 },
+                    {0, 1, 0 },
+                    {0, 0, 1 }};
+            return r;
+        }
+    }*/
+
+    //fsRot(double m[][3]){ for(int i=0;i<9;++i)(double*)(r[i])=(double*)(m);}
+};
+inline fsRot operator*(const fsRot& a, const fsRot& b) {
+    fsRot c;
+    int i,j,m;
+    for(i=0;i<3;i++) {
+      for(j=0;j<3;j++) {
+        c.m[i][j] = 0;
+        for(m=0;m<3;m++)
+          c.m[i][j] += a.m[i][m]*b.m[m][j];
+      }
+    }
+    return c;
+}
+
 
 // Our 12*4=48 byte message (used both up and down)
 struct woodenhaptics_message {
@@ -48,6 +90,8 @@ public:
     fsVec3d computePosition(int ch_a, int ch_b, int ch_c){ int enc[3] = {ch_a,ch_b,ch_c}; return computePosition(enc); }
     fsVec3d computePosition(int* encoderValues); // encoders[3]
     fsVec3d computeMotorAmps(fsVec3d force, int* encoderValues);
+    fsRot computeRotation(int* encBase, int* encRot);
+
 
 
 

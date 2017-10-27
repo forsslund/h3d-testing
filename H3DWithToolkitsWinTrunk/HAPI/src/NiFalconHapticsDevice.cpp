@@ -267,18 +267,51 @@ void NiFalconHapticsDevice::updateDeviceValues( DeviceValues &dv,
 
 
 
-  dv.position = Vec3(p.y(),p.z(),p.x()); // Chai->H3D transform
-  //std::cout << "Calculated position (chai): " << p.x << "," << y << "," << z << "\n";
+  //dv.position = Vec3(p.y(),p.z(),p.x()); // Chai->H3D transform
+  //std::cout << "Calculated position (chai): " << p.x() << "," << p.y() << "," << p.z() << "\n";
 
 
 
+  fsRot r = fs.getRot();
+
+  Matrix3 ChaiToH3d(0,1,0,
+                    0,0,1,
+                    1,0,0);
+
+  dv.position = ChaiToH3d * Vec3(p.x(),p.y(),p.z());
+  Matrix3 chaiRot(r.m[0][0], r.m[0][1], r.m[0][2],
+                  r.m[1][0], r.m[1][1], r.m[1][2],
+                  r.m[2][0], r.m[2][1], r.m[2][2]);
+
+
+  /*
+  Matrix3 fix(0,0,1,
+              0,1,0,
+              -1,0,0);
+*/
+  // Rotate about x (h3d)
+
+  Matrix3 fix(1,0,0,
+              0,0,-1,
+              0,1,0);
+
+  // rotate baout z (h3d) 90'
+  Matrix3 rotz(0,-1,0,
+               1,0,0,
+               0,0,1);
+
+  // rotate about y
+
+
+  Matrix3 h3dRot = ChaiToH3d * chaiRot;
+
+  dv.orientation = Rotation(h3dRot);
 
 
 
 
 
   calculateVelocity(dv, dt);
-  dv.orientation = current_values.orientation;
   dv.button_status = current_values.button_status;
   com_lock.unlock();
 }

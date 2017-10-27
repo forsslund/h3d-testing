@@ -6,7 +6,7 @@
 #include <sstream>
 #include <cmath>
 
-#define UNIX
+#define UNIX;
 #ifdef UNIX
 namespace unix {
     // Following includes are only used for reading/writing config file and to find
@@ -16,6 +16,33 @@ namespace unix {
     #include <pwd.h>
 }
 #endif
+
+
+
+void fsRot::identity() {
+    double a[3][3] = { {1, 0, 0 },
+                       {0, 1, 0 },
+                       {0, 0, 1 }};
+    set(a);
+}
+void fsRot::rot_x(double t){
+    double a[3][3] = { {1,   0,       0    },
+                       {0, cos(t), -sin(t) },
+                       {0, sin(t), cos(t)  }};
+    set(a);
+}
+void fsRot::rot_y(double t){
+    double a[3][3] = { {cos(t),  0, sin(t) },
+                       {   0,    1,   0    },
+                       {-sin(t), 0, cos(t) }};
+    set(a);
+}
+void fsRot::rot_z(double t){
+    double a[3][3] = { {cos(t), -sin(t), 0 },
+                       {sin(t), cos(t), 0 },
+                       {0, 0, 1 }};
+    set(a);
+}
 
 
 const double pi = 3.14159265359;
@@ -220,6 +247,11 @@ Kinematics::Kinematics():m_config(read_config_file())
 
 fsVec3d Kinematics::computePosition(int *encoderValues)
 {
+    if(m_config.variant == 2){ // Ramtin device
+        encoderValues[0] = -encoderValues[0];
+        encoderValues[1] = -encoderValues[1];
+        encoderValues[2] = -encoderValues[2];
+    }
     pose p  = calculate_pose(m_config, encoderValues);
 
 
@@ -239,17 +271,17 @@ fsVec3d Kinematics::computePosition(int *encoderValues)
     double y = sin(tA)*(Lb*sin(tB)+Lc*sin(tC)) - m_config.workspace_origin_y;
     double z = Ln+Lb*cos(tB)-Lc*cos(tC)        - m_config.workspace_origin_z;
 
-    #ifdef DELAY
-        using namespace std::chrono;
-        duration<int, std::micro> d{400};
-        std::this_thread::sleep_for(d);
-    #endif
-
     return fsVec3d(x,y,z);
 }
 
 fsVec3d Kinematics::computeMotorAmps(fsVec3d force, int *encoderValues)
 {
+    if(m_config.variant == 2){ // Ramtin device
+        encoderValues[0] = -encoderValues[0];
+        encoderValues[1] = -encoderValues[1];
+        encoderValues[2] = -encoderValues[2];
+    }
+
     const pose p = calculate_pose(m_config, encoderValues);
 
     const double& Ln = p.Ln;
@@ -306,6 +338,11 @@ fsVec3d Kinematics::computeMotorAmps(fsVec3d force, int *encoderValues)
         motorTorque[1] =  motorTorque[1];
         motorTorque[2] = -motorTorque[2];
     }
+    if(int(m_config.variant) == 2){ // RAMTIN
+        motorTorque[0] = -motorTorque[0];
+        motorTorque[1] = -motorTorque[1];
+        motorTorque[2] = -motorTorque[2];
+    }
 
 
     // Set motor torque (t)
@@ -320,6 +357,66 @@ fsVec3d Kinematics::computeMotorAmps(fsVec3d force, int *encoderValues)
     }
 
     return fsVec3d(motorAmpere[0],motorAmpere[1],motorAmpere[2]);
+}
+
+fsRot Kinematics::computeRotation(int* encBase, int* encRot)
+{
+    if(m_config.variant == 2){ // Ramtin device
+        encBase[0] = -encBase[0];
+        encBase[1] = -encBase[1];
+        encBase[2] = -encBase[2];
+    }
+
+    // From compute pos -------------------
+    pose p  = calculate_pose(m_config, encBase);
+
+    const double& Ln = p.Ln;
+    const double& Lb = p.Lb;
+    const double& Lc = p.Lc;
+    const double& tA = p.tA;
+    double tB = p.tB;
+    double tC = p.tC;
+
+    if(int(m_config.variant) == 1) // ALUHAPTICS
+        tB = tB + 3.141592/2;
+    else
+        tC = -tC + 3.141592/2;
+
+    double x = cos(tA)*(Lb*sin(tB)+Lc*sin(tC)) - m_config.workspace_origin_x;
+    double y = sin(tA)*(Lb*sin(tB)+Lc*sin(tC)) - m_config.workspace_origin_y;
+    double z = Ln+Lb*cos(tB)-Lc*cos(tC)        - m_config.workspace_origin_z;
+    // -------------------------------------------
+
+    fsRot r;
+    r.identity();
+
+    double tD = encRot[0]*2*pi/4096.0;
+    double tE = -encRot[1]*2*pi/4096.0;
+    double tF = encRot[2]*2*pi/4096.0;
+
+    // rotate about z (body a)
+    fsRot rA;
+    rA.rot_z(tA);
+
+    // rotate about y (body b)
+    fsRot rB;
+    rB.rot_y(tB);
+
+    // rotate about y (body c)
+    fsRot rC;
+    rC.rot_y(-tC+3.141592/2);
+
+    // rotate about x
+    fsRot rD;
+    rD.rot_x(tD);
+    // rotate about y
+    fsRot rE;
+    rE.rot_y(tE);
+    // rotate about x
+    fsRot rF;
+    rF.rot_x(tF);
+    r =  rA*rB*rC*rD*rE *rF;
+    return r;
 }
 
 

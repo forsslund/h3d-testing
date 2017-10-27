@@ -12,7 +12,7 @@
 #include <iomanip>
 #include <fstream>
 
-#include <HAPI/kinematics.h>
+#include "kinematics.h"
 //#include <chai3d.h>
 #include <boost/asio.hpp> // Note: pollutes namespace
 
@@ -41,6 +41,7 @@ public:
     chrono::steady_clock::time_point app_start;
 
     fsVec3d latestPos;
+    fsRot latestRot;
     int latestEnc[3];
     fsVec3d currentForce;
     fsVec3d nextForce;
@@ -58,6 +59,13 @@ public:
         mtx_pos.unlock();
         return p;
     }
+    inline fsRot getRot() {
+        mtx_pos.lock();
+        fsRot r = latestRot;
+        mtx_pos.unlock();
+        return r;
+    }
+
     inline void setForce(fsVec3d f){
         mtx_force.lock();
         nextForce = f;

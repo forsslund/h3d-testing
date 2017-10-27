@@ -1,3 +1,4 @@
+#include <HAPI/kinematics.h>
 #include <HAPI/fshapticdevicethread.h>
 
 #include <boost/thread.hpp>
@@ -60,15 +61,23 @@ void FsHapticDeviceThread::server(boost::asio::io_service& io_service, unsigned 
         ch_b = in->getEnc(1);
         ch_c = in->getEnc(2);
 
-        //std::cout << "Ch readings: " << ch_a << ", " << ch_b << ", " << ch_c << "\n";
 
         // Compute position
         pos = kinematics.computePosition(ch_a,ch_b,ch_c);
-
+        int base[] = {ch_a, ch_b, ch_c};
+        int rot[]  = {in->getEnc(3), in->getEnc(4), in->getEnc(5)};
+        fsRot r = kinematics.computeRotation(base,rot);
+/*
+        std::cout << "Ch readings: " << ch_a << ", " << ch_b << ", " << ch_c << "      " << rot[0] << "," << rot[1] << "," << rot[2] << "\n";
         //std::cout << in->toString() << "\n";
-        //std::cout << "Computed position: " << pos.x() << "," << pos.y() << "," << pos.z() << "\n";
+        std::cout << "Computed position: " << pos.x() << "," << pos.y() << "," << pos.z() << "\n";
+        std::cout << "Computed rotation: [" << r.m[0][0] << " " << r.m[0][1] << " " << r.m[0][2] << "\n"
+                                            << r.m[1][0] << " " << r.m[1][1] << " " << r.m[1][2] << "\n"
+                                            << r.m[2][0] << " " << r.m[2][1] << " " << r.m[2][2] << " ]\n\n";
+                                            */
         mtx_pos.lock();
         latestPos = pos;
+        latestRot = r;
         latestEnc[0]=ch_a;
         latestEnc[1]=ch_b;
         latestEnc[2]=ch_c;
