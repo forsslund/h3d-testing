@@ -286,27 +286,32 @@ void NiFalconHapticsDevice::updateDeviceValues( DeviceValues &dv,
 
 
   // rotate about x 180
+  /*
   Matrix3 rotx180(1,0,0,
                   0,-1,0,
                   0,0,-1);
+                  */
 
   // rotate about x 90
   Matrix3 rotx90(1,0,0,
                   0,0,-1,
                   0,1,0);
 
+  // rotate about x 90
+  Matrix3 roty90(0,0,1,
+                  0,1,0,
+                  -1,0,0);
 
   // rotate about z 90
+  /*
   Matrix3 rotz90(0,-1,0,
                  1,0,0,
                  0,0,1);
+  */
 
 
+  Matrix3 h3dRot = ChaiToH3d * chaiRot * rotx90 * roty90;
 
-  Matrix3 h3dRot = rotz90 * rotx90 * ChaiToH3d * chaiRot;
-
-  std::cout << "ChaiRot: " << chaiRot << "\n";
-  std::cout << "H3dRot: " << h3dRot << "\n";
 
   dv.orientation = Rotation(h3dRot);
 
