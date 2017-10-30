@@ -6,7 +6,7 @@
     <meta name='editors' content='SenseGraphics AB, 2005-2014'/>
   </head>
   <Scene>
-<Viewpoint position="0 0 0.6" description="Default H3D Viewpoint"/>
+<Viewpoint position="0.0 0.13 0.6" description="Default H3D Viewpoint"/>
 
 <DeviceInfo>
   <FalconDevice positionCalibration="1 0 0 0
@@ -17,16 +17,17 @@
       <Group containerField="stylus">
 	  <Shape>
 	    <Appearance>
-	      <Material/>
+	      <Material diffuseColor="0 1 0"/>
 	    </Appearance>
-	    <Sphere DEF="PROXY" radius="0.0025"/>
+	    <Sphere DEF="PROXY" radius="0.025"/>
 	  </Shape>
+<!--Transform rotation="1 0 0 3.1415"-->
 	  <Transform translation="0 0 0.08" rotation="1 0 0 1.570796" >
 	    <Shape>
 	      <Appearance>
-		<Material/>
+		<Material diffuseColor="1 0 0"/>
 	      </Appearance>
-	      <Cylinder radius="0.005" height="0.1"/>
+	      <Cylinder radius="0.01" height="0.1"/>
 	    </Shape>
 	  </Transform>
 <Transform translation="0.05 0 0">
@@ -45,13 +46,15 @@
 	      <Box size="0.01 0.15 0.01"/>
 	    </Shape>
 </Transform>
+<!--/Transform-->
 	</Group>
   </FalconDevice>
 
 
 </DeviceInfo>
+<Transform translation="0.05 0 0">
 
-    <FitToBoxTransform boxCenter="0 0 0" boxSize="0.3 0.3 0.3"
+    <FitToBoxTransform boxCenter="0 0 0" boxSize="0.03 0.03 0.03"
     uniformScalingOnly="true" active="true">
       <Shape>
         <Appearance>
@@ -65,6 +68,7 @@
                     ss2_n1="1" ss2_n2="1" ss2_n3="1"  />
       </Shape>
     </FitToBoxTransform>
+</Transform>	
     
     <PROGRAM_SETTING node="SS" field="ss1_m" name="ss1_m" section="SuperShape node parameters" />
     <PROGRAM_SETTING node="SS" field="ss1_a" name="ss1_a" section="SuperShape node parameters" />

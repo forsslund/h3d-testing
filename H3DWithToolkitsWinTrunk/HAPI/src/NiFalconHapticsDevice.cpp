@@ -26,7 +26,7 @@
 /// \file NiFalconHapticsDevice.cpp
 /// \brief Cpp file for NiFalconHapticsDevice.
 ///
-//
+//chai
 //////////////////////////////////////////////////////////////////////////////
 
 #define NIFALCONAPI_LIBUSB
@@ -274,9 +274,10 @@ void NiFalconHapticsDevice::updateDeviceValues( DeviceValues &dv,
 
   fsRot r = fs.getRot();
 
-  Matrix3 ChaiToH3d(0,1,0,
-                    0,0,1,
-                    1,0,0);
+  Matrix3 ChaiToH3d(0,1,0,  // h3d x is chai y (second column)
+                    0,0,1,  // h3d y is chai z (third column)
+                    1,0,0); // h3d z is chai x (first column)
+  //Where is chai:  x y z
 
   dv.position = ChaiToH3d * Vec3(p.x(),p.y(),p.z());
   Matrix3 chaiRot(r.m[0][0], r.m[0][1], r.m[0][2],
@@ -284,26 +285,28 @@ void NiFalconHapticsDevice::updateDeviceValues( DeviceValues &dv,
                   r.m[2][0], r.m[2][1], r.m[2][2]);
 
 
-  /*
-  Matrix3 fix(0,0,1,
-              0,1,0,
-              -1,0,0);
-*/
-  // Rotate about x (h3d)
+  // rotate about x 180
+  Matrix3 rotx180(1,0,0,
+                  0,-1,0,
+                  0,0,-1);
 
-  Matrix3 fix(1,0,0,
-              0,0,-1,
-              0,1,0);
-
-  // rotate baout z (h3d) 90'
-  Matrix3 rotz(0,-1,0,
-               1,0,0,
-               0,0,1);
-
-  // rotate about y
+  // rotate about x 90
+  Matrix3 rotx90(1,0,0,
+                  0,0,-1,
+                  0,1,0);
 
 
-  Matrix3 h3dRot = ChaiToH3d * chaiRot;
+  // rotate about z 90
+  Matrix3 rotz90(0,-1,0,
+                 1,0,0,
+                 0,0,1);
+
+
+
+  Matrix3 h3dRot = rotz90 * rotx90 * ChaiToH3d * chaiRot;
+
+  std::cout << "ChaiRot: " << chaiRot << "\n";
+  std::cout << "H3dRot: " << h3dRot << "\n";
 
   dv.orientation = Rotation(h3dRot);
 
