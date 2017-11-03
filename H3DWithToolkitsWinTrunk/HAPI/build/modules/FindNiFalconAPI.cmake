@@ -135,8 +135,8 @@ include( FindPackageHandleStandardArgs )
 # if all listed variables are TRUE
 find_package_handle_standard_args( NiFalconAPI DEFAULT_MSG
                                    NiFalconAPI_INCLUDE_DIR NiFalconAPI_LIBRARY ${required_comm_lib_vars} Boost_FOUND )
-
-set( NiFalconAPI_LIBRARIES ${NiFalconAPI_LIBRARY}  remotehaptics Qt5Core Qt5Network)
+add_definitions(-std=c++11)
+set( NiFalconAPI_LIBRARIES ${NiFalconAPI_LIBRARY}  remotehaptics Qt5Core Qt5Network boost_system boost_date_time boost_regex boost_context boost_coroutine boost_thread boost_chrono)
 foreach( comm_lib_var ${required_comm_lib_vars} )
   set( NiFalconAPI_LIBRARIES ${NiFalconAPI_LIBRARIES} ${comm_lib_var} )
 endforeach()

@@ -1,0 +1,18 @@
+# interfaces(5) file used by ifup(8) and ifdown(8)
+auto lo
+iface lo inet loopback
+
+auto enp3s0
+iface enp3s0 inet static
+address 192.168.0.132
+netmask 255.255.255.0
+
+auto enx00133b0c17c0
+iface enx00133b0c17c0 inet dhcp
+
+auto wlx000f600c1c23
+iface wlx000f600c1c23 inet static
+address 10.42.0.1
+netmask 255.255.255.240
+wireless-mode Master
+
