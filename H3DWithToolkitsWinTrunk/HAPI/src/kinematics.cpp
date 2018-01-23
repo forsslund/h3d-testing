@@ -1,4 +1,9 @@
+#define USE_HAPTICS
+#ifdef USE_HAPTICS // For H3D
 #include <HAPI/kinematics.h>
+#else
+#include "kinematics.h"
+#endif
 #include <string>
 
 #include <iostream>
@@ -6,7 +11,6 @@
 #include <sstream>
 #include <cmath>
 
-#define UNIX
 #ifdef UNIX
 namespace unix {
     // Following includes are only used for reading/writing config file and to find
@@ -252,6 +256,7 @@ fsVec3d Kinematics::computePosition(int *encoderValues)
         encoderValues[1] = -encoderValues[1];
         encoderValues[2] = -encoderValues[2];
     }
+
     pose p  = calculate_pose(m_config, encoderValues);
 
 
@@ -284,7 +289,6 @@ fsVec3d Kinematics::computeMotorAmps(fsVec3d force, int *encoderValues)
 
     const pose p = calculate_pose(m_config, encoderValues);
 
-    const double& Ln = p.Ln;
     const double& Lb = p.Lb;
     const double& Lc = p.Lc;
     const double& tA = p.tA;
@@ -340,8 +344,8 @@ fsVec3d Kinematics::computeMotorAmps(fsVec3d force, int *encoderValues)
     }
     if(int(m_config.variant) == 2){ // RAMTIN
         motorTorque[0] = -motorTorque[0];
-        motorTorque[1] = -motorTorque[1];
-        motorTorque[2] = -motorTorque[2];
+        motorTorque[1] = motorTorque[1];
+        motorTorque[2] = motorTorque[2];
     }
 
 
@@ -370,9 +374,6 @@ fsRot Kinematics::computeRotation(int* encBase, int* encRot)
     // From compute pos -------------------
     pose p  = calculate_pose(m_config, encBase);
 
-    const double& Ln = p.Ln;
-    const double& Lb = p.Lb;
-    const double& Lc = p.Lc;
     const double& tA = p.tA;
     double tB = p.tB;
     double tC = p.tC;
@@ -381,18 +382,44 @@ fsRot Kinematics::computeRotation(int* encBase, int* encRot)
         tB = tB + 3.141592/2;
     else
         tC = -tC + 3.141592/2;
-
-    double x = cos(tA)*(Lb*sin(tB)+Lc*sin(tC)) - m_config.workspace_origin_x;
-    double y = sin(tA)*(Lb*sin(tB)+Lc*sin(tC)) - m_config.workspace_origin_y;
-    double z = Ln+Lb*cos(tB)-Lc*cos(tC)        - m_config.workspace_origin_z;
     // -------------------------------------------
 
     fsRot r;
     r.identity();
 
-    double tD = encRot[0]*2*pi/4096.0;
-    double tE = -encRot[1]*2*pi/4096.0;
-    double tF = encRot[2]*2*pi/4096.0;
+if(m_config.variant == 1){ // Vintage
+    double tD = -encRot[0]*2*pi/2000.0;
+    double tE = encRot[1]*2*pi/2000.0;
+    double tF = encRot[2]*2*pi/2000.0;
+
+    // rotate about z (body a)
+    fsRot rA;
+    rA.rot_z(tA);
+
+    // rotate about y (body b)
+    fsRot rB;
+    //rB.rot_y(tB-3.141592/2);
+
+    // rotate about y (body c)
+    fsRot rC;
+    rC.rot_y(-tC);
+
+    // rotate about x
+    fsRot rD;
+    rD.rot_z(tD);
+    // rotate about y
+    fsRot rE;
+    rE.rot_y(tE);
+    // rotate about x
+    fsRot rF;
+    rF.rot_x(tF);
+    r =  rA*rB*rC*rD*rE*rF;
+}
+
+if(m_config.variant == 2){ // Ramtin/Polhem
+    double tD = -encRot[2]*2*pi/1024.0;
+    double tE = encRot[1]*2*pi/1024.0;
+    double tF = encRot[0]*2*pi/1024.0;
 
     // rotate about z (body a)
     fsRot rA;
@@ -416,6 +443,8 @@ fsRot Kinematics::computeRotation(int* encBase, int* encRot)
     fsRot rF;
     rF.rot_x(tF);
     r =  rA*rB*rC*rD*rE *rF;
+}
+
     return r;
 }
 

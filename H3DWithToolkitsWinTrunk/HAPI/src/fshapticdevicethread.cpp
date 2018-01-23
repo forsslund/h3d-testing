@@ -1,5 +1,11 @@
+#define USE_HAPTICS
+#ifdef USE_HAPTICS // For H3D
 #include <HAPI/kinematics.h>
 #include <HAPI/fshapticdevicethread.h>
+#else
+#include "kinematics.h"
+#include "fshapticdevicethread.h"
+#endif
 
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
@@ -20,8 +26,11 @@ enum { max_length = 1024 };
 void FsHapticDeviceThread::server(boost::asio::io_service& io_service, unsigned short port)
 {
   udp::socket sock(io_service, udp::endpoint(udp::v4(), port));
+std::cout << "in service\n";
+
   for (;;)
   {
+//std::cout << "in forever loop\n";
 
     unsigned char data[max_length];
     //for(int i=0;i<max_length;++i)
@@ -55,6 +64,7 @@ void FsHapticDeviceThread::server(boost::asio::io_service& io_service, unsigned 
     pos.zero();
 
     if (data[0]==0xA4 && length>8){
+//std::cout << "got data\n";
         in_msg* in = reinterpret_cast<in_msg*>(data);
 
         ch_a = in->getEnc(0);
@@ -81,6 +91,9 @@ void FsHapticDeviceThread::server(boost::asio::io_service& io_service, unsigned 
         latestEnc[0]=ch_a;
         latestEnc[1]=ch_b;
         latestEnc[2]=ch_c;
+        latestEnc[3]=rot[0];
+        latestEnc[4]=rot[1];
+        latestEnc[5]=rot[2];
         mtx_pos.unlock();
     }
 
@@ -156,13 +169,13 @@ void FsHapticDeviceThread::server(boost::asio::io_service& io_service, unsigned 
 
 
     // Cap at 2A since Escons 24/4 cant do more than that for 4s
-    if(out.milliamps_motor_a >= 2000) out.milliamps_motor_a = 1999;
-    if(out.milliamps_motor_b >= 2000) out.milliamps_motor_b = 1999;
-    if(out.milliamps_motor_c >= 2000) out.milliamps_motor_c = 1999;
+    if(out.milliamps_motor_a >= max_milliamps) out.milliamps_motor_a = max_milliamps-1;
+    if(out.milliamps_motor_b >= max_milliamps) out.milliamps_motor_b = max_milliamps-1;
+    if(out.milliamps_motor_c >= max_milliamps) out.milliamps_motor_c = max_milliamps-1;
 
-    if(out.milliamps_motor_a <= -2000) out.milliamps_motor_a = -1999;
-    if(out.milliamps_motor_b <= -2000) out.milliamps_motor_b = -1999;
-    if(out.milliamps_motor_c <= -2000) out.milliamps_motor_c = -1999;
+    if(out.milliamps_motor_a <= -max_milliamps) out.milliamps_motor_a = -max_milliamps;
+    if(out.milliamps_motor_b <= -max_milliamps) out.milliamps_motor_b = -max_milliamps;
+    if(out.milliamps_motor_c <= -max_milliamps) out.milliamps_motor_c = -max_milliamps;
 
 
     //std::cout << "Force: " << f.x() << ", " << f.y() << ", " << f.z() << "\n";
@@ -190,40 +203,28 @@ void FsHapticDeviceThread::server(boost::asio::io_service& io_service, unsigned 
 }
 }
 
-FsHapticDeviceThread::FsHapticDeviceThread(bool wait_for_next_message):
-    sem_force_sent(0),newforce(false),wait_for_next_message(wait_for_next_message)
+FsHapticDeviceThread::FsHapticDeviceThread(bool wait_for_next_message, Kinematics::configuration c):
+    sem_force_sent(0),newforce(false),wait_for_next_message(wait_for_next_message), kinematics(Kinematics(c))
 {
+    std::cout << "FsHapticDeviceThread::FsHapticDeviceThread()\n";
+std::cout << "Wait for next message: " << wait_for_next_message << " \nKinematics config name: " << c.name << "\n";
     app_start = chrono::steady_clock::now();
 
-    io_service = new boost::asio::io_service();
-
-    boost::thread* m_thread;
-    m_thread = new boost::thread(boost::bind(&FsHapticDeviceThread::thread, this));
-
-    latestEnc[0]=0;
-    latestEnc[1]=0;
-    latestEnc[2]=0;
-
-
+    for(int i=0;i<6;++i)
+        latestEnc[i]=0;
 
 }
 
 void FsHapticDeviceThread::thread()
 {
+  io_service = new boost::asio::io_service();
 
-
-  try
-  {
-
-
-
+  try {
     server(*io_service, 47111);
-
   }
-  catch (std::exception& e)
-  {
-    std::cerr << "Exception: " << e.what() << "\n";
-    }
+  catch (std::exception& e){
+    std::cerr << "Exception in FsHapticDeviceThread::thread(): " << e.what() << "\n";
+  }
 
 }
 

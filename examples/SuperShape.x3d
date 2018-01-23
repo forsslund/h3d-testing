@@ -6,7 +6,7 @@
     <meta name='editors' content='SenseGraphics AB, 2005-2014'/>
   </head>
   <Scene>
-<Viewpoint position="0.0 0.13 0.6" description="Default H3D Viewpoint"/>
+<Viewpoint position="0.0 0.0 0.6" description="Default H3D Viewpoint"/>
 
 <DeviceInfo>
   <FalconDevice positionCalibration="1 0 0 0

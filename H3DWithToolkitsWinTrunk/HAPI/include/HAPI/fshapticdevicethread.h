@@ -33,25 +33,33 @@ using boost::asio::ip::udp;
 class FsHapticDeviceThread
 {
 public:
-    FsHapticDeviceThread(bool wait_for_next_message=false);
+    FsHapticDeviceThread(bool wait_for_next_message=false,
+                         Kinematics::configuration c=Kinematics::configuration::polhem_v1());
     void server(boost::asio::io_service& io_service, unsigned short port);
-    void thread();
+    virtual void thread();
+    void open() {     m_thread = new boost::thread(boost::bind(&FsHapticDeviceThread::thread, this)); }
 
+    boost::interprocess::interprocess_semaphore sem_force_sent;
+    bool newforce;
+    const bool wait_for_next_message;
     Kinematics kinematics;
     chrono::steady_clock::time_point app_start;
 
     fsVec3d latestPos;
     fsRot latestRot;
-    int latestEnc[3];
+    int latestEnc[6];
     fsVec3d currentForce;
     fsVec3d nextForce;
 
     boost::mutex mtx_pos;
     boost::mutex mtx_force;
-    boost::interprocess::interprocess_semaphore sem_force_sent;
-    bool newforce;
 
-    const bool wait_for_next_message;
+    inline void getEnc(int a[]){
+        mtx_pos.lock();
+        for(int i=0;i<6;++i)
+            a[i]=latestEnc[i];
+        mtx_pos.unlock();
+    }
 
     inline fsVec3d getPos() {
         mtx_pos.lock();
@@ -160,9 +168,12 @@ public:
 
     boost::asio::io_service* io_service;
 
+    int max_milliamps = 2000;
 
 
 
+
+    boost::thread* m_thread = 0;
 
 
 

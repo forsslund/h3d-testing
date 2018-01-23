@@ -132,7 +132,10 @@ NiFalconHapticsDevice::NiFalconHapticsDevice( unsigned int device_index ):
   index( device_index ),
   device( new libnifalcon::FalconDevice ) {
   
-  max_stiffness = 800;
+  max_stiffness = 1500;
+
+std::cout << "NiFalconHapitcsDevice::NiFalconHapticsDevice()\n";
+  fs.open();
 }
 
 NiFalconHapticsDevice::~NiFalconHapticsDevice() {
