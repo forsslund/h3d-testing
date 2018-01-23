@@ -1,0 +1,5 @@
+build-*/
+H3DWithToolkitsWinTrunk/build*/
+!CMakeLists.txt
+H3DWithToolkitsWinTrunk/External*/
+*.user
