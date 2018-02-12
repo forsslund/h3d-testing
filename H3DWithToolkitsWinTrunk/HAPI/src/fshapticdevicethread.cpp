@@ -1,5 +1,5 @@
-#define USE_HAPTICS
-#ifdef USE_HAPTICS // For H3D
+#define HAPI_API
+#ifdef HAPI_API // For H3D
 #include <HAPI/kinematics.h>
 #include <HAPI/fshapticdevicethread.h>
 #else
@@ -26,11 +26,8 @@ enum { max_length = 1024 };
 void FsHapticDeviceThread::server(boost::asio::io_service& io_service, unsigned short port)
 {
   udp::socket sock(io_service, udp::endpoint(udp::v4(), port));
-std::cout << "in service\n";
-
   for (;;)
   {
-//std::cout << "in forever loop\n";
 
     unsigned char data[max_length];
     //for(int i=0;i<max_length;++i)
@@ -64,7 +61,6 @@ std::cout << "in service\n";
     pos.zero();
 
     if (data[0]==0xA4 && length>8){
-//std::cout << "got data\n";
         in_msg* in = reinterpret_cast<in_msg*>(data);
 
         ch_a = in->getEnc(0);
@@ -77,6 +73,7 @@ std::cout << "in service\n";
         int base[] = {ch_a, ch_b, ch_c};
         int rot[]  = {in->getEnc(3), in->getEnc(4), in->getEnc(5)};
         fsRot r = kinematics.computeRotation(base,rot);
+        fsVec3d angles = kinematics.computeBodyAngles(base);
 /*
         std::cout << "Ch readings: " << ch_a << ", " << ch_b << ", " << ch_c << "      " << rot[0] << "," << rot[1] << "," << rot[2] << "\n";
         //std::cout << in->toString() << "\n";
@@ -86,6 +83,7 @@ std::cout << "in service\n";
                                             << r.m[2][0] << " " << r.m[2][1] << " " << r.m[2][2] << " ]\n\n";
                                             */
         mtx_pos.lock();
+        latestBodyAngles = angles;
         latestPos = pos;
         latestRot = r;
         latestEnc[0]=ch_a;
@@ -207,7 +205,6 @@ FsHapticDeviceThread::FsHapticDeviceThread(bool wait_for_next_message, Kinematic
     sem_force_sent(0),newforce(false),wait_for_next_message(wait_for_next_message), kinematics(Kinematics(c))
 {
     std::cout << "FsHapticDeviceThread::FsHapticDeviceThread()\n";
-std::cout << "Wait for next message: " << wait_for_next_message << " \nKinematics config name: " << c.name << "\n";
     app_start = chrono::steady_clock::now();
 
     for(int i=0;i<6;++i)

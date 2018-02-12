@@ -54,16 +54,16 @@ inline std::string toString(const fsVec3d& r){
    std::stringstream ss;
    ss.precision(3);
    ss.setf(std::ios::fixed);
-   ss << std::setw(6) << r.m_x << " " << std::setw(6) << r.m_y << " " << std::setw(6) << r.m_z;
+   ss << std::setw(6) << r.m_x << ", " << std::setw(6) << r.m_y << ", " << std::setw(6) << r.m_z;
    return ss.str();
 }
 inline std::string toString(const fsRot& r){
    std::stringstream ss;
    ss.precision(3);
    ss.setf(std::ios::fixed);
-   ss << std::setw(6) << r.m[0][0] << " " << std::setw(6) << r.m[0][1] << " " << std::setw(6) << r.m[0][2] << "\n";
-   ss << std::setw(6) << r.m[1][0] << " " << std::setw(6) << r.m[1][1] << " " << std::setw(6) << r.m[1][2] << "\n";
-   ss << std::setw(6) << r.m[2][0] << " " << std::setw(6) << r.m[2][1] << " " << std::setw(6) << r.m[2][2] << "\n";
+   ss << std::setw(6) << r.m[0][0] << ", " << std::setw(6) << r.m[0][1] << ", " << std::setw(6) << r.m[0][2] << ",\n";
+   ss << std::setw(6) << r.m[1][0] << ", " << std::setw(6) << r.m[1][1] << ", " << std::setw(6) << r.m[1][2] << ",\n";
+   ss << std::setw(6) << r.m[2][0] << ", " << std::setw(6) << r.m[2][1] << ", " << std::setw(6) << r.m[2][2] << "\n";
    return ss.str();
 }
 
@@ -108,9 +108,10 @@ class Kinematics
 public:
 
     fsVec3d computePosition(int ch_a, int ch_b, int ch_c){ int enc[3] = {ch_a,ch_b,ch_c}; return computePosition(enc); }
-    fsVec3d computePosition(int* encoderValues); // encoders[3]
-    fsVec3d computeMotorAmps(fsVec3d force, int* encoderValues);
-    fsRot computeRotation(int* encBase, int* encRot);
+    fsVec3d computePosition(const int* encoderValues); // encoders[3]
+    fsVec3d computeBodyAngles(const int* encoderValues); // encoders[3]
+    fsVec3d computeMotorAmps(fsVec3d force, const int* encoderValues);
+    fsRot computeRotation(const int* encBase, const int* encRot);
 
 
 
@@ -185,7 +186,7 @@ public:
                               0.140, 0.000, 0.100, 0.100,
                               0.0259, 0.0259, 0.0259, 3.0, 2000, 2000, 2000,
                               5.0, 800.0, 8.0,
-                              0.080, 0.080, 0.040, 0.070, 0};
+                              0.080, 0.080, 0.040, 0.070, 9.81};
             return Kinematics::configuration(data,"polhem_v1 hardcoded");
         }
 

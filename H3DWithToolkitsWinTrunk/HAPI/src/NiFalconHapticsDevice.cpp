@@ -271,7 +271,7 @@ void NiFalconHapticsDevice::updateDeviceValues( DeviceValues &dv,
 
 
   //dv.position = Vec3(p.y(),p.z(),p.x()); // Chai->H3D transform
-  //std::cout << "Calculated position (chai): " << p.x() << "," << p.y() << "," << p.z() << "\n";
+  //  std::cout << "Calculated position (chai): " << p.x() << "," << p.y() << "," << p.z() << "\n";
 
 
 
@@ -283,6 +283,8 @@ void NiFalconHapticsDevice::updateDeviceValues( DeviceValues &dv,
   //Where is chai:  x y z
 
   dv.position = ChaiToH3d * Vec3(p.x(),p.y(),p.z());
+  //std::cout << "Calculated position (H3D): " << dv.position.x << "," << dv.position.y << "," << dv.position.z << "\n";
+
   Matrix3 chaiRot(r.m[0][0], r.m[0][1], r.m[0][2],
                   r.m[1][0], r.m[1][1], r.m[1][2],
                   r.m[2][0], r.m[2][1], r.m[2][2]);

@@ -46,6 +46,7 @@ public:
     chrono::steady_clock::time_point app_start;
 
     fsVec3d latestPos;
+    fsVec3d latestBodyAngles;
     fsRot latestRot;
     int latestEnc[6];
     fsVec3d currentForce;
@@ -59,6 +60,12 @@ public:
         for(int i=0;i<6;++i)
             a[i]=latestEnc[i];
         mtx_pos.unlock();
+    }
+    inline fsVec3d getBodyAngles(){
+        mtx_pos.lock();
+	fsVec3d t = latestBodyAngles;
+        mtx_pos.unlock();
+        return t;
     }
 
     inline fsVec3d getPos() {

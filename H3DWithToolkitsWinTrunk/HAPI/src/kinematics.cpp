@@ -1,5 +1,5 @@
-#define USE_HAPTICS
-#ifdef USE_HAPTICS // For H3D
+#define HAPI_API
+#ifdef HAPI_API // For H3D
 #include <HAPI/kinematics.h>
 #else
 #include "kinematics.h"
@@ -63,7 +63,7 @@ struct pose {
     double tC;  // angle of body C (theta_C)
 };
 
-pose calculate_pose(const Kinematics::configuration& c, int* encoder_values) {
+pose calculate_pose(const Kinematics::configuration& c, const int* encoder_values) {
     pose p;
 
     double cpr[] = { c.cpr_encoder_a, c.cpr_encoder_b, c.cpr_encoder_c };
@@ -186,8 +186,7 @@ std::string toJSON(const Kinematics::configuration& c){
         << j("mass_body_c",c.mass_body_c)
         << j("length_cm_body_b",c.length_cm_body_b)
         << j("length_cm_body_c",c.length_cm_body_c)
-        << j("g_constant",c.g_constant)
-        << "}" << endl;
+        << "\"g_constant\": " << c.g_constant << "}" << endl; // note no "," on last element
    return json.str();
 }
 
@@ -249,15 +248,38 @@ Kinematics::Kinematics():m_config(read_config_file())
 
 }
 
-fsVec3d Kinematics::computePosition(int *encoderValues)
+fsVec3d Kinematics::computeBodyAngles(const int *encoderValues)
 {
+    int e[3] = {encoderValues[0],encoderValues[1],encoderValues[2]};
     if(m_config.variant == 2){ // Ramtin device
-        encoderValues[0] = -encoderValues[0];
-        encoderValues[1] = -encoderValues[1];
-        encoderValues[2] = -encoderValues[2];
+        e[0] = -e[0];
+        e[1] = -e[1];
+        e[2] = -e[2];
     }
 
-    pose p  = calculate_pose(m_config, encoderValues);
+    pose p  = calculate_pose(m_config, e);
+
+    double tB = p.tB;
+    double tC = p.tC;
+
+    if(int(m_config.variant) == 1) // ALUHAPTICS
+        tB = tB + 3.141592/2;
+    else
+        tC = -tC + 3.141592/2;
+
+    return fsVec3d(p.tA, tB, tC);
+}
+
+fsVec3d Kinematics::computePosition(const int *encoderValues)
+{
+    int e[3] = {encoderValues[0],encoderValues[1],encoderValues[2]};
+    if(m_config.variant == 2){ // Ramtin device
+        e[0] = -e[0];
+        e[1] = -e[1];
+        e[2] = -e[2];
+    }
+
+    pose p  = calculate_pose(m_config, e);
 
 
     const double& Ln = p.Ln;
@@ -279,15 +301,16 @@ fsVec3d Kinematics::computePosition(int *encoderValues)
     return fsVec3d(x,y,z);
 }
 
-fsVec3d Kinematics::computeMotorAmps(fsVec3d force, int *encoderValues)
+fsVec3d Kinematics::computeMotorAmps(fsVec3d force, const int *encoderValues)
 {
+    int e[3] = {encoderValues[0],encoderValues[1],encoderValues[2]};
     if(m_config.variant == 2){ // Ramtin device
-        encoderValues[0] = -encoderValues[0];
-        encoderValues[1] = -encoderValues[1];
-        encoderValues[2] = -encoderValues[2];
+        e[0] = -e[0];
+        e[1] = -e[1];
+        e[2] = -e[2];
     }
 
-    const pose p = calculate_pose(m_config, encoderValues);
+    const pose p = calculate_pose(m_config, e);
 
     const double& Lb = p.Lb;
     const double& Lc = p.Lc;
@@ -363,16 +386,17 @@ fsVec3d Kinematics::computeMotorAmps(fsVec3d force, int *encoderValues)
     return fsVec3d(motorAmpere[0],motorAmpere[1],motorAmpere[2]);
 }
 
-fsRot Kinematics::computeRotation(int* encBase, int* encRot)
+fsRot Kinematics::computeRotation(const int* encBase, const int* encRot)
 {
+    int eBase[3] = {encBase[0],encBase[1],encBase[2]};
     if(m_config.variant == 2){ // Ramtin device
-        encBase[0] = -encBase[0];
-        encBase[1] = -encBase[1];
-        encBase[2] = -encBase[2];
+        eBase[0] = -eBase[0];
+        eBase[1] = -eBase[1];
+        eBase[2] = -eBase[2];
     }
 
     // From compute pos -------------------
-    pose p  = calculate_pose(m_config, encBase);
+    pose p  = calculate_pose(m_config, eBase);
 
     const double& tA = p.tA;
     double tB = p.tB;
@@ -417,7 +441,7 @@ if(m_config.variant == 1){ // Vintage
 }
 
 if(m_config.variant == 2){ // Ramtin/Polhem
-    double tD = -encRot[2]*2*pi/1024.0;
+    double tD = encRot[2]*2*pi/1024.0;
     double tE = encRot[1]*2*pi/1024.0;
     double tF = encRot[0]*2*pi/1024.0;
 
