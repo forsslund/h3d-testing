@@ -441,9 +441,9 @@ if(m_config.variant == 1){ // Vintage
 }
 
 if(m_config.variant == 2){ // Ramtin/Polhem
-    double tD = encRot[2]*2*pi/1024.0;
-    double tE = encRot[1]*2*pi/1024.0;
-    double tF = encRot[0]*2*pi/1024.0;
+    double tD = -encRot[2]*2*pi/1024.0;
+    double tE = -encRot[1]*2*pi/1024.0;
+    double tF = -encRot[0]*2*pi/1024.0;
 
     // rotate about z (body a)
     fsRot rA;

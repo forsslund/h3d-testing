@@ -9,4 +9,7 @@ sudo apt-get install cmake gcc g++ libxerces-c-dev ftgl-dev libopenal1 libalut0 
                      subversion python-tk patch libwxsmithlib-dev libteem-dev \
                      libglw1-mesa libxxf86vm-dev ssh qt5-default qtcreator \
                      libusb-1.0-0-dev libboost-all-dev
-
+# For chai
+sudo apt install libhidapi-dev libudev-dev libusb-1.0-0-dev libasound2-dev freeglut3-dev \
+    build-essential cmake libudev-dev libxcursor-dev libxrandr-dev libxinerama-dev \
+    qt5-default

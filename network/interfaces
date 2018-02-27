@@ -16,3 +16,8 @@ address 10.42.0.1
 netmask 255.255.255.240
 wireless-mode Master
 
+auto  wlx88d7f6a4a4d9
+iface wlx88d7f6a4a4d9 inet dhcp
+wpa-ssid comhem_E0C429
+wpa-psk 8B04A59537
+
