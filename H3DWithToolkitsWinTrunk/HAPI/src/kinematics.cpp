@@ -420,9 +420,8 @@ if(m_config.variant == 1){ // Vintage
     fsRot rA;
     rA.rot_z(tA);
 
-    // rotate about y (body b)
+    // DO NOT rotate about y (body b)
     fsRot rB;
-    //rB.rot_y(tB-3.141592/2);
 
     // rotate about y (body c)
     fsRot rC;
@@ -451,7 +450,7 @@ if(m_config.variant == 2){ // Ramtin/Polhem
 
     // rotate about y (body b)
     fsRot rB;
-    rB.rot_y(tB);
+    //rB.rot_y(tB);
 
     // rotate about y (body c)
     fsRot rC;
@@ -466,7 +465,8 @@ if(m_config.variant == 2){ // Ramtin/Polhem
     // rotate about x
     fsRot rF;
     rF.rot_x(tF);
-    r =  rA*rB*rC*rD*rE *rF;
+    r =  rA*rB*rC*rD*rE*rF;
+//std::cout << "tA: " << tA << "\n";
 }
 
     return r;

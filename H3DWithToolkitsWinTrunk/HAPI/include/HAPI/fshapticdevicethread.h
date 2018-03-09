@@ -47,6 +47,7 @@ public:
 
     fsVec3d latestPos;
     fsVec3d latestBodyAngles;
+    int latestCommandedMilliamps[3];
     fsRot latestRot;
     int latestEnc[6];
     fsVec3d currentForce;
@@ -66,6 +67,12 @@ public:
 	fsVec3d t = latestBodyAngles;
         mtx_pos.unlock();
         return t;
+    }
+    inline void getLatestCommandedMilliamps(int ma[]){
+        mtx_pos.lock();
+        for(int i=0;i<3;++i)
+            ma[i]=latestCommandedMilliamps[i];
+        mtx_pos.unlock();
     }
 
     inline fsVec3d getPos() {

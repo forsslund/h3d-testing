@@ -52,6 +52,47 @@
 
 
 </DeviceInfo>
+
+
+
+
+	  <Shape>
+	    <Appearance>
+	      <Material diffuseColor="0 1 0"/>
+	    </Appearance>
+	    <Sphere DEF="PROXY" radius="0.025"/>
+	  </Shape>
+<!--Transform rotation="1 0 0 3.1415"-->
+	  <Transform translation="0 0 0.08" rotation="1 0 0 1.570796" >
+	    <Shape>
+	      <Appearance>
+		<Material diffuseColor="1 0 0"/>
+	      </Appearance>
+	      <Cylinder radius="0.01" height="0.1"/>
+	    </Shape>
+	  </Transform>
+<Transform translation="0.05 0 0">
+	    <Shape>
+	      <Appearance>
+		<Material/>
+	      </Appearance>
+	      <Box size="0.1 0.01 0.01"/>
+	    </Shape>
+</Transform>
+<Transform translation="0 0.075 0">
+	    <Shape>
+	      <Appearance>
+		<Material/>
+	      </Appearance>
+	      <Box size="0.01 0.15 0.01"/>
+	    </Shape>
+</Transform>
+<!--/Transform-->
+
+
+
+
+<ForceField force="0 0 1"/>
 <Transform translation="0.05 0 0">
 
     <FitToBoxTransform boxCenter="0 0 0" boxSize="0.03 0.03 0.03"
