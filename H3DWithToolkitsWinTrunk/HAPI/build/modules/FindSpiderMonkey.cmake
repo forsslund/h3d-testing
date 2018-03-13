@@ -33,7 +33,7 @@ if( WIN32 )
                 PATHS ${module_lib_search_paths}
                 DOC "Path to js32 library." )
 else()
-  find_library( SpiderMonkey_LIBRARY NAMES mozjs js
+  find_library( SpiderMonkey_LIBRARY NAMES js
                                      DOC "Path to mozjs library." )
 endif()
 mark_as_advanced( SpiderMonkey_LIBRARY )
