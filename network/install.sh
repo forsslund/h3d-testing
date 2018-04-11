@@ -8,6 +8,7 @@ sudo cp dnsmasq.service /lib/systemd/system/dnsmasq.service
 sudo cp interfaces /etc/network/interfaces
 sudo cp NetworkManager.conf /etc/NetworkManager/NetworkManager.conf
 sudo cp blacklist.conf /etc/modprobe.d/blacklist.conf
+sudo cp vncserver /etc/init.d/vncserver
 sudo chmod +x /etc/rc.local
 sudo update-rc.d hostapd defaults
 sudo update-rc.d hostapd enable
