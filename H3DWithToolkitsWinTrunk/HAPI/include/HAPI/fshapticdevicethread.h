@@ -48,6 +48,8 @@ public:
     fsVec3d latestPos;
     fsVec3d latestBodyAngles;
     int latestCommandedMilliamps[3];
+    int num_sent_messages;
+    int num_received_messages;
     fsRot latestRot;
     int latestEnc[6];
     fsVec3d currentForce;
@@ -73,6 +75,20 @@ public:
         for(int i=0;i<3;++i)
             ma[i]=latestCommandedMilliamps[i];
         mtx_pos.unlock();
+    }
+    inline int getNumSentMessages(){
+        int r;
+        mtx_pos.lock();
+        r = num_sent_messages;
+        mtx_pos.unlock();
+        return r;
+    }
+    inline int getNumReceivedMessages(){
+        int r;
+        mtx_pos.lock();
+        r = num_received_messages;
+        mtx_pos.unlock();
+        return r;
     }
 
     inline fsVec3d getPos() {

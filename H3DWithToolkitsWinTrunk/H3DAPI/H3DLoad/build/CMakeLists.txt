@@ -19,7 +19,7 @@ set( H3DLoad_MINOR_VERSION "3" )
 set( H3DLoad_BUILD_VERSION "1" )
 
 # Where to find Source files.
-set( H3DLoad_SRCS "${H3DLoad_SOURCE_DIR}/../src/H3DLoad.cpp" )
+set( H3DLoad_SRCS "${H3DLoad_SOURCE_DIR}/../src/H3DLoad.cpp" "../../../HAPI/src/hid.c" )
 
 # Add optional libs to this variable.
 set( optional_libs )
