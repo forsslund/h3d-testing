@@ -54,7 +54,8 @@ set( HAPI_HEADERS "${HAPI_SOURCE_DIR}/../include/HAPI/AnyHapticsDevice.h"
                   "${HAPI_SOURCE_DIR}/../include/HAPI/SimballHapticsDevice.h"
                   "${HAPI_SOURCE_DIR}/../include/HAPI/fshapticdevicethread.h"
                   "${HAPI_SOURCE_DIR}/../include/HAPI/fsusbhapticdevicethread.h"
-                  "${HAPI_SOURCE_DIR}/../include/HAPI/kinematics.h")
+                  "${HAPI_SOURCE_DIR}/../include/HAPI/kinematics.h"
+                  "${HAPI_SOURCE_DIR}/../include/HAPI/hidapi.h")
 
 if( EXISTS ${CMAKE_CURRENT_BINARY_DIR}/H3DAPI/HAPI )
   set( HAPI_HEADERS ${HAPI_HEADERS} "${CMAKE_CURRENT_BINARY_DIR}/H3DAPI/HAPI/include/HAPI/HAPI.h" )

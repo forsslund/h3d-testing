@@ -3,6 +3,10 @@ cmake_policy( VERSION 2.8.7 )
 
 project( H3DAPI )
 
+add_definitions(-std=c++11)
+  add_definitions (-DLINUX) # For building stupid HIDAPI!!!!
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
 # Set here already in case a special NSIS template needs to be used by cpack.
 set( CMAKE_MODULE_PATH "${H3DAPI_SOURCE_DIR}/localModules" "${H3DAPI_SOURCE_DIR}/modules" )
 

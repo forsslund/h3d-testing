@@ -31,7 +31,7 @@ class FsUSBHapticDeviceThread : public FsHapticDeviceThread
 {
 public:
     FsUSBHapticDeviceThread(bool wait_for_next_message=false,
-                         Kinematics::configuration c=Kinematics::configuration::woodenhaptics_v2015()):
+                         Kinematics::configuration c=Kinematics::configuration::polhem_v1()):
         FsHapticDeviceThread::FsHapticDeviceThread(wait_for_next_message,c){}
 
     void thread();
