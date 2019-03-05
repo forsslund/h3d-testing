@@ -22,7 +22,7 @@ void FsUSBHapticDeviceThread::thread()
     num_received_messages = 0;
 
     // Set protocol 1=Old usb, 2=April 2018
-    int protocol_version = 2;
+    int protocol_version = 1;
 
     // Open connection
     devs = hid_enumerate(0x0, 0x0);
@@ -67,7 +67,7 @@ void FsUSBHapticDeviceThread::thread()
         while (res == 0) {
             res = hid_read(handle, buf, sizeof(buf));
             //if(res!=0)
-            //    std::cout << res << "-hej";
+            //    std::cout << res << " bytes received";
             if(res==14 || res==8) // Got a correct message
                 //incoming_msg = *reinterpret_cast<woodenhaptics_message*>(buf);
                 hid_to_pc = *reinterpret_cast<hid_to_pc_message*>(buf);
@@ -134,6 +134,12 @@ void FsUSBHapticDeviceThread::thread()
                       hid_to_pc.encoder_c};
         fsVec3d amps = kinematics.computeMotorAmps(f,enc);
 
+        if(useCurrentDirectly){
+            mtx_force.lock();
+            amps = nextCurrent;
+            mtx_force.unlock();
+        }
+
         pc_to_hid.current_motor_a_mA = int(amps.x()*1000.0);
         pc_to_hid.current_motor_b_mA = int(amps.y()*1000.0);
         pc_to_hid.current_motor_c_mA = int(amps.z()*1000.0);
@@ -166,7 +172,7 @@ void FsUSBHapticDeviceThread::thread()
         unsigned char* msg_buf = reinterpret_cast<unsigned char*>(&pc_to_hid);
 
 
-        int byte_length = 8;  // Old protocol
+        int byte_length = 9;  // Old protocol
         if(protocol_version==2)
             byte_length = 15; // New protocol April 2018
 

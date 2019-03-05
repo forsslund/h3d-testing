@@ -143,6 +143,12 @@ void FsHapticDeviceThread::server(boost::asio::io_service& io_service, unsigned 
     int enc[3] = {ch_a,ch_b,ch_c};
     fsVec3d amps = kinematics.computeMotorAmps(f,enc);
 
+    if(useCurrentDirectly){
+        mtx_force.lock();
+        amps = nextCurrent;
+        mtx_force.unlock();
+    }
+
 #ifdef INSTAB
     amps.zero();
     if(ch_a < 0)
@@ -150,9 +156,9 @@ void FsHapticDeviceThread::server(boost::asio::io_service& io_service, unsigned 
 #endif
 
     out_msg out;
-    out.milliamps_motor_a = int(amps.x()*1000.0);
-    out.milliamps_motor_b = int(amps.y()*1000.0);
-    out.milliamps_motor_c = int(amps.z()*1000.0);
+    out.milliamps_motor_a = -int(amps.x()*1000.0);
+    out.milliamps_motor_b = -int(amps.y()*1000.0);
+    out.milliamps_motor_c = -int(amps.z()*1000.0);
 
 
 #ifdef STATIC_CURRENT
@@ -176,9 +182,19 @@ void FsHapticDeviceThread::server(boost::asio::io_service& io_service, unsigned 
     if(out.milliamps_motor_c <= -max_milliamps) out.milliamps_motor_c = -max_milliamps;
 
 
+    // Avoid 0?
+    //if(out.milliamps_motor_a<=0) out.milliamps_motor_a--; else out.milliamps_motor_a++;
+    //if(out.milliamps_motor_b<=0) out.milliamps_motor_b--; else out.milliamps_motor_b++;
+    //if(out.milliamps_motor_c<=0) out.milliamps_motor_c--; else out.milliamps_motor_c++;
+
     //std::cout << "Force: " << f.x() << ", " << f.y() << ", " << f.z() << "\n";
     //std::cout << "mA: " << out.milliamps_motor_a << ", " << out.milliamps_motor_b << ", " << out.milliamps_motor_c << "\n";
 
+    mtx_pos.lock();
+    latestCommandedMilliamps[0] = out.milliamps_motor_a;
+    latestCommandedMilliamps[1] = out.milliamps_motor_b;
+    latestCommandedMilliamps[2] = out.milliamps_motor_c;
+    mtx_pos.unlock();
 
 
 

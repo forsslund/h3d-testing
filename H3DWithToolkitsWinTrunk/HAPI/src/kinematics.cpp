@@ -12,13 +12,13 @@
 #include <cmath>
 
 #ifdef UNIX
-namespace unix {
+//namespace unix {
     // Following includes are only used for reading/writing config file and to find
     // the user's home directory (where the config file will be stored)
     #include <unistd.h>
     #include <sys/types.h>
     #include <pwd.h>
-}
+//}
 #endif
 
 
@@ -192,10 +192,10 @@ std::string toJSON(const Kinematics::configuration& c){
 
 void write_config_file(const Kinematics::configuration& config){
 #ifdef UNIX
-    using namespace unix;
+//    using namespace unix;
     const char *homedir;
     if ((homedir = getenv("HOME")) == NULL) {
-        homedir = unix::getpwuid(getuid())->pw_dir;
+        homedir = getpwuid(getuid())->pw_dir;
     }
 
     std::cout << "Writing configuration to: "<< homedir
@@ -209,10 +209,10 @@ void write_config_file(const Kinematics::configuration& config){
 
 Kinematics::configuration read_config_file(){
 #ifdef UNIX
-    using namespace unix;
+//    using namespace unix;
     const char *homedir;
     if ((homedir = getenv("HOME")) == NULL) {
-        homedir = unix::getpwuid(getuid())->pw_dir;
+        homedir = getpwuid(getuid())->pw_dir;
     }
 
     std::cout << "Trying loading configuration from: "<< homedir
@@ -440,7 +440,7 @@ if(m_config.variant == 1){ // Vintage
 }
 
 if(m_config.variant == 2){ // Ramtin/Polhem
-    double tD = -encRot[2]*2*pi/1024.0;
+    double tD = encRot[2]*2*pi/1024.0;
     double tE = -encRot[1]*2*pi/1024.0;
     double tF = -encRot[0]*2*pi/1024.0;
 

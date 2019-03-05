@@ -253,7 +253,7 @@ if( ZLIB_FOUND )
 endif()
 
 # Optional extra library. Add python bindings to H3D API, allow for extended prototyping without using C++.
-find_package( PythonLibs )
+find_package( PythonLibs 2.7 REQUIRED)
 if( PYTHON_INCLUDE_PATH AND PYTHON_LIBRARIES )
   set( PYTHON_FOUND 1 )
 else()

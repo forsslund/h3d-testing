@@ -20,6 +20,7 @@
  code repository located at:
         http://github.com/signal11/hidapi .
 ********************************************************/
+#define LINUX
 #if defined(LINUX)
 /* C */
 #include <stdio.h>

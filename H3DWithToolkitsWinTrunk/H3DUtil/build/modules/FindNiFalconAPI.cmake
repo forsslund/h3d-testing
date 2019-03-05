@@ -93,17 +93,18 @@ if( NiFalconAPI_comm_ftd2xx_LIBRARY )
   endif()
 endif()
 
-set( required_comm_lib_vars NiFalconAPI_comm_usb_LIBRARY )
-if( NOT NiFalconAPI_LIBUSB )
-  if( NiFalconAPI_LIBFTDI )
-    set( required_comm_lib_vars NiFalconAPI_comm_ftdi_LIBRARY )
-  elseif( NiFalconAPI_LIBFTD2XX )
-    set( required_comm_lib_vars NiFalconAPI_comm_ftd2xx_LIBRARY )
-    if( WIN32 )
-      set( required_comm_lib_vars ${required_comm_lib_vars} NiFalconAPI_ftd2xx_LIBRARY )
-    endif()
-  endif()
-endif()
+#set( required_comm_lib_vars NiFalconAPI_comm_usb_LIBRARY )
+#if( NOT NiFalconAPI_LIBUSB )
+#  if( NiFalconAPI_LIBFTDI )
+#    set( required_comm_lib_vars NiFalconAPI_comm_ftdi_LIBRARY )
+#  elseif( NiFalconAPI_LIBFTD2XX )
+#    set( required_comm_lib_vars NiFalconAPI_comm_ftd2xx_LIBRARY )
+#    if( WIN32 )
+#      set( required_comm_lib_vars ${required_comm_lib_vars} NiFalconAPI_ftd2xx_LIBRARY )
+#    endif()
+#  endif()
+#endif()
+SET(CMAKE_CXX_FLAGS "-std=c++0x")
 
 # Look for the nifalcon_cpp library.
 find_library( NiFalconAPI_LIBRARY
@@ -127,15 +128,15 @@ if( WIN32 )
   endif()
 endif()
 
-find_package( Boost COMPONENTS program_options thread )
+find_package( Boost COMPONENTS program_options thread)
 
 include( FindPackageHandleStandardArgs )
 # handle the QUIETLY and REQUIRED arguments and set NiFalconAPI_FOUND to TRUE
 # if all listed variables are TRUE
 find_package_handle_standard_args( NiFalconAPI DEFAULT_MSG
                                    NiFalconAPI_INCLUDE_DIR NiFalconAPI_LIBRARY ${required_comm_lib_vars} Boost_FOUND )
-
-set( NiFalconAPI_LIBRARIES ${NiFalconAPI_LIBRARY} )
+add_definitions(-std=c++11)
+set( NiFalconAPI_LIBRARIES ${NiFalconAPI_LIBRARY}  remotehaptics Qt5Core Qt5Network boost_system boost_date_time boost_regex boost_context boost_coroutine boost_thread boost_chrono usb-1.0 udev 826_64)
 foreach( comm_lib_var ${required_comm_lib_vars} )
   set( NiFalconAPI_LIBRARIES ${NiFalconAPI_LIBRARIES} ${comm_lib_var} )
 endforeach()

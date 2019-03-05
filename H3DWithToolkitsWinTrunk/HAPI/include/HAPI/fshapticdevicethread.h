@@ -54,6 +54,8 @@ public:
     int latestEnc[6];
     fsVec3d currentForce;
     fsVec3d nextForce;
+    fsVec3d nextCurrent;
+    bool useCurrentDirectly{false};
 
     boost::mutex mtx_pos;
     boost::mutex mtx_force;
@@ -105,8 +107,20 @@ public:
     }
 
     inline void setForce(fsVec3d f){
+        useCurrentDirectly = false;
         mtx_force.lock();
         nextForce = f;
+        newforce = true;
+        mtx_force.unlock();
+
+        // wait until at least one new force message has been sent (received a new package)
+        if(wait_for_next_message)
+            sem_force_sent.wait();
+    }
+    inline void setCurrent(fsVec3d amps){
+        useCurrentDirectly = true;
+        mtx_force.lock();
+        nextCurrent = amps;
         newforce = true;
         mtx_force.unlock();
 
@@ -154,13 +168,13 @@ public:
     };
 
     struct in_msg {
-        unsigned char start = 0xa4;
-        unsigned char number1 = 0x07;
-        unsigned char number2 = 0x42;
-        unsigned char encoder_abcdef[12];
-        utwobyte timestamp;
-        utwobyte id;
-        unsigned char checksum;
+        unsigned char start = 0xa4;   // Static number for fun "synq byte"
+        unsigned char number1 = 0x17; // Number of bytes in payload (17 bytes)
+        unsigned char number2 = 0x42; // What this message is about. "Polhem encoders 6dof message"
+        unsigned char encoder_abcdef[12]; // 2 bytes per channel encoder
+        utwobyte timestamp; // 2 bytes timestamp
+        utwobyte id;  // 2 bytes
+        unsigned char checksum; // one byte
 
 
         int getEnc(int i) {
@@ -198,7 +212,7 @@ public:
 
     boost::asio::io_service* io_service;
 
-    int max_milliamps = 2000;
+    int max_milliamps = 1000;
 
 
 
