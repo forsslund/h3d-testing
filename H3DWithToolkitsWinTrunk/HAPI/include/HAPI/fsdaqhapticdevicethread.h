@@ -2,8 +2,6 @@
 #define FSDAQHAPTICDEVICETHREAD_H
 
 #include "fshapticdevicethread.h"
-#include "826api.h"
-
 
 class FsDAQHapticDeviceThread : public FsHapticDeviceThread
 {

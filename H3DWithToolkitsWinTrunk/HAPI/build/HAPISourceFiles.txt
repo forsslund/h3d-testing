@@ -113,6 +113,7 @@ set( HAPI_SOURCE_FILES "AnyHapticsDevice.cpp"
                "SimballHapticsDevice.cpp"
                "fshapticdevicethread.cpp"
                "fsusbhapticdevicethread.cpp"
+               "fsdaqhapticdevicethread.cpp"
                "hid.c"
                "kinematics.cpp")
 

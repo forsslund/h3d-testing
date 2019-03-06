@@ -39,8 +39,9 @@
 
 #include "../../../libremotehaptics/libremotehaptics.h"
 
-#include "fshapticdevicethread.h"
-#include "fsusbhapticdevicethread.h"
+//#include "fshapticdevicethread.h"
+//#include "fsusbhapticdevicethread.h"
+#include "fsdaqhapticdevicethread.h"
 
 
 
@@ -175,7 +176,7 @@ namespace HAPI {
     //------------------------------------------------------------------------------
     // From CWoodenDevice.h
     //------------------------------------------------------------------------------
-    FsUSBHapticDeviceThread fs;
+    FsDAQHapticDeviceThread fs;
     //------------------------------------------------------------------------------
 
   };

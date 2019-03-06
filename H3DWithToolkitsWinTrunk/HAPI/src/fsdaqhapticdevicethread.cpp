@@ -1,7 +1,7 @@
 #define HAPI_API
 #ifdef HAPI_API // For H3D
 #include <HAPI/fsdaqhapticdevicethread.h>
-#include <HAPI/.h>
+#include <HAPI/826api.h>
 #else
 #include "fsdaqhapticdevicethread.h"
 #include "826api.h"
