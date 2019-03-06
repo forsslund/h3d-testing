@@ -37,7 +37,14 @@ public:
                          Kinematics::configuration c=Kinematics::configuration::polhem_v1());
     void server(boost::asio::io_service& io_service, unsigned short port);
     virtual void thread();
-    void open() {     m_thread = new boost::thread(boost::bind(&FsHapticDeviceThread::thread, this)); }
+    virtual void close(){
+        running=false;
+        m_thread->join();
+    }
+    int open() {     running=true; m_thread = new boost::thread(boost::bind(&FsHapticDeviceThread::thread, this)); return 0;}
+    std::string getErrorCode() { return std::string("Error opening device."); }
+
+    bool running;
 
     boost::interprocess::interprocess_semaphore sem_force_sent;
     bool newforce;

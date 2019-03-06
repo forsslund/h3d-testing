@@ -246,6 +246,7 @@ bool NiFalconHapticsDevice::initHapticsDevice( int _thread_frequency ) {
 
 bool NiFalconHapticsDevice::releaseHapticsDevice() {
   HAPIHapticsDevice::disableDevice();
+  fs.close();
   
   if( com_thread ) {
     if( com_func_cb_handle != -1 ) {
